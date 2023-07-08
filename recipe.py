@@ -1,8 +1,8 @@
 class Recipes:
-   def __init__(self, name, ingredients, instructions, diet, calories, servings):
+   def __init__(self, name, ingredients, url, diet, calories, servings):
        self.name = name
+       self.url = url,
        self.ingredients = ingredients
-       self.instructions = instructions
        self.diet = diet
        self.calories = calories
        self.servings = servings
@@ -10,8 +10,8 @@ class Recipes:
    def getRecipe(self):
        recipe = {
            "name": self.name,
+           "url": self.url,
            "ingredients": self.ingredients,
-           "instructions": self.instructions,
            "diet": self.diet,
            "calories": self.calories,
            "servings": self.servings
