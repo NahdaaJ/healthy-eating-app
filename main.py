@@ -7,99 +7,109 @@ from web_manager import WebManager
 R_ED_API_KEY = config.R_ED_API_KEY
 R_APP_ID = config.R_APP_ID
 
-# q=query text
-# diet
-# health
-# type?
-def is_valid_url(url):
-    try:
-        response = requests.head(url)
-        return response.status_code >= 200 and response.status_code < 300
-    except requests.exceptions.RequestException:
-        return False
-
 recipe_manager = RecipeManager()
 web_manager = WebManager()
 
-recipe_manager.intialise_db()
-main_ingredient = input("Please list your main ingredients, separating with commas, or press enter to skip:")
-diet = input("""Please enter ONE diet or press enter to skip.
-Balanced                    Low-Carb
-High-Fiber                  Low-Fat
-High Protein                Low-Sodium
-""").strip()
+def mainMenu():
+    valid_input = False
+    recipe_manager.initialise_db()
 
-health = input("""Please input health requirement using commas to split, or press enter to skip.
-Alcohol-Free            Kosher                  Pork-Free
-Celery-Free             Low-Fat-Abs             Red-Meat-Free
-Crustacean-Free         Low-Sugar               Sesame-Free
-Dairy-Free              Lupine-Free             Shellfish-Free
-DASH                    Mediterranean           Soy-Free
-Egg-Free                Mollusk-Free            Sugar-Conscious
-Fish-Free               Mustard-Free            Sulfite-Free
-Fodmap-Free             No-Oil-Added            Tree-Nut-Free
-Gluten-Free             Paleo                   Vegan
-Immuno-Supportive       Peanut-Free             Vegetarian
-Keto-Friendly           Pescatarian             Wheat-Free
+    while not valid_input:
+        user_input = input("""Welcome to your Healthy Eating App!
+        
+1 - Find a new recipe
+2 - View saved recipes
+3 - Create a meal plan
+4 - View past meal plans
+5 - View current meal plan
+6 - Exit
 
 Your input: """).strip()
 
-type = input("""Please enter the type of meal you are looking for, press enter to skip.
-Breakfast       Snack
-Dinner          Teatime
-Lunch
+        match user_input:
+            case "1":
+                findRecipe()
+            case other:
+                input("Invalid input. Press enter to try again.\n")
 
-Your input: """).strip()
+def findRecipe():
+    main_ingredient = input("\n\nPlease list your main ingredients, separating with commas, or press enter to skip:")
 
-if main_ingredient == "" and diet == "" and health == "" and type == "":
-    print("Please enter one requirement.")
+    diet = input("""\nPlease enter ONE diet or press enter to skip.
+    Balanced                    Low-Carb
+    High-Fiber                  Low-Fat
+    High Protein                Low-Sodium
+    """).strip()
 
-q = ""
-dietURL = ""
-healthURL = ""
-typeURL = ""
+    health = input("""\nPlease input health requirement using commas to split, or press enter to skip.
+    Alcohol-Free            Kosher                  Pork-Free
+    Celery-Free             Low-Fat-Abs             Red-Meat-Free
+    Crustacean-Free         Low-Sugar               Sesame-Free
+    Dairy-Free              Lupine-Free             Shellfish-Free
+    DASH                    Mediterranean           Soy-Free
+    Egg-Free                Mollusk-Free            Sugar-Conscious
+    Fish-Free               Mustard-Free            Sulfite-Free
+    Fodmap-Free             No-Oil-Added            Tree-Nut-Free
+    Gluten-Free             Paleo                   Vegan
+    Immuno-Supportive       Peanut-Free             Vegetarian
+    Keto-Friendly           Pescatarian             Wheat-Free
+    
+    Your input: """).strip()
 
-if main_ingredient != "":
-    q = f"&q={main_ingredient}"
-if diet != "":
-    dietURL = f"&diet={diet}"
-if health != "":
-    healthURL = f"&health={health}"
-if type != "":
-    typeURL = f"&mealType={type}"
+    type = input("""\nPlease enter the type of meal you are looking for, press enter to skip.
+    Breakfast       Snack
+    Dinner          Teatime
+    Lunch
+    
+    Your input: """).strip()
 
-URL = f"https://api.edamam.com/api/recipes/v2?type=public{q}&app_id={R_APP_ID}&app_key={R_ED_API_KEY}{dietURL}{healthURL}{typeURL}"
-response = requests.get(URL)
-recipe_data = response.json()
+    if main_ingredient == "" and diet == "" and health == "" and type == "":
+        print("\nPlease enter one requirement.")
 
-recipe_list = recipe_data['hits']
+    try:
+        recipe_list = web_manager.generateRecipe(main_ingredient, diet, health, type)
+    except:
+        input("\nNo hits found. Press enter to search again.")
+        findRecipe()
 
-for index, item in enumerate(recipe_list):
-    url = item['recipe']['url']
-    if not is_valid_url(url):
-        recipe_list.pop(index)
+    print("\n\n")
+    for index, recipe in enumerate(recipe_list):
+        recipe_name = recipe['recipe']['label']
+        print(f"{index+1}. {recipe_name}")
 
-for index, recipe in enumerate(recipe_list):
-    recipe_name = recipe['recipe']['label']
-    print(f"{index+1}. {recipe_name}")
+    search_again = input("\nWould you like to search again? (Y/N)").strip().lower()
 
-choice = int(input("Enter the number of the recipe you want to choose: "))
+    if search_again == "y":
+        findRecipe()
 
-# Retrieve the chosen recipe
-chosen_recipe = recipe_list[choice - 1]['recipe']
-url = chosen_recipe['url']
+    choice = int(input("\nEnter the number of the recipe you want to choose: "))
+
+    # Retrieve the chosen recipe
+    chosen_recipe = recipe_list[choice - 1]['recipe']
+    url = chosen_recipe['url']
 
 
-recipe_name = chosen_recipe['label']
-ingredients = chosen_recipe['ingredientLines']
-servings = chosen_recipe['yield']
-calories_total = round(chosen_recipe['calories'])
-calories_per_serving = round(calories_total/servings)
+    recipe_name = chosen_recipe['label'].title()
+    ingredients = chosen_recipe['ingredientLines']
+    servings = chosen_recipe['yield']
+    calories_total = round(chosen_recipe['calories'])
+    calories_per_serving = round(calories_total/servings)
 
-print(recipe_name)
-for item in ingredients:
-    print(item)
-print(url)
+    print("\n\n")
+    print(f"""----------------{recipe_name}----------------
+Servings: {servings}            Calories per Serving: {calories_per_serving}
 
-print(calories_per_serving)
+INGREDIENTS:""")
+    for item in ingredients:
+        print(item)
 
+    print(f"""Recipe URL: {url}
+-------------------------------------------------------\n""")
+
+
+    save_recipe = input("Would you like to save this recipe? (Y/N)").strip().lower()
+    if save_recipe == "y":
+        new_recipe = Recipes(recipe_name, url, ingredients, diet, health, calories_per_serving, servings)
+        recipe_manager.add_recipe(new_recipe)
+
+mainMenu()
