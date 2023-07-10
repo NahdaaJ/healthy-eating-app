@@ -29,42 +29,48 @@ Your input: """).strip()
         match user_input:
             case "1":
                 findRecipe()
+
+            case "6":
+                print("\n\n\nThank you for using the Healthy Eating App!")
+                exit()
+
             case other:
                 input("Invalid input. Press enter to try again.\n")
 
 def findRecipe():
-    main_ingredient = input("\n\nPlease list your main ingredients, separating with commas, or press enter to skip:")
+    main_ingredient = input("\n\nPlease list your main ingredients, separating with commas, or press enter to skip: ")
 
     diet = input("""\nPlease enter ONE diet or press enter to skip.
-    Balanced                    Low-Carb
-    High-Fiber                  Low-Fat
-    High Protein                Low-Sodium
-    """).strip()
+Balanced                    Low-Carb
+High-Fiber                  Low-Fat
+High Protein                Low-Sodium
+
+Your Input: """).strip()
 
     health = input("""\nPlease input health requirement using commas to split, or press enter to skip.
-    Alcohol-Free            Kosher                  Pork-Free
-    Celery-Free             Low-Fat-Abs             Red-Meat-Free
-    Crustacean-Free         Low-Sugar               Sesame-Free
-    Dairy-Free              Lupine-Free             Shellfish-Free
-    DASH                    Mediterranean           Soy-Free
-    Egg-Free                Mollusk-Free            Sugar-Conscious
-    Fish-Free               Mustard-Free            Sulfite-Free
-    Fodmap-Free             No-Oil-Added            Tree-Nut-Free
-    Gluten-Free             Paleo                   Vegan
-    Immuno-Supportive       Peanut-Free             Vegetarian
-    Keto-Friendly           Pescatarian             Wheat-Free
-    
-    Your input: """).strip()
+Alcohol-Free            Kosher                  Pork-Free
+Celery-Free             Low-Fat-Abs             Red-Meat-Free
+Crustacean-Free         Low-Sugar               Sesame-Free
+Dairy-Free              Lupine-Free             Shellfish-Free
+DASH                    Mediterranean           Soy-Free
+Egg-Free                Mollusk-Free            Sugar-Conscious
+Fish-Free               Mustard-Free            Sulfite-Free
+Fodmap-Free             No-Oil-Added            Tree-Nut-Free
+Gluten-Free             Paleo                   Vegan
+Immuno-Supportive       Peanut-Free             Vegetarian
+Keto-Friendly           Pescatarian             Wheat-Free
+
+Your input: """).strip()
 
     type = input("""\nPlease enter the type of meal you are looking for, press enter to skip.
-    Breakfast       Snack
-    Dinner          Teatime
-    Lunch
-    
-    Your input: """).strip()
+Breakfast       Snack
+Dinner          Teatime
+Lunch
+
+Your input: """).strip()
 
     if main_ingredient == "" and diet == "" and health == "" and type == "":
-        print("\nPlease enter one requirement.")
+        print("\nPlease enter at least one requirement.")
 
     try:
         recipe_list = web_manager.generateRecipe(main_ingredient, diet, health, type)
@@ -107,9 +113,22 @@ INGREDIENTS:""")
 -------------------------------------------------------\n""")
 
 
-    save_recipe = input("Would you like to save this recipe? (Y/N)").strip().lower()
+    save_recipe = input("Would you like to save this recipe? (Y/N) ").strip().lower()
     if save_recipe == "y":
         new_recipe = Recipes(recipe_name, url, ingredients, diet, health, calories_per_serving, servings)
         recipe_manager.add_recipe(new_recipe)
 
-mainMenu()
+number = 10
+left = 10
+
+while left > 0:
+    user = int(input("Enter number of days"))
+
+    if left-user < 0:
+        print(f"You have {left} days left. Input too large.")
+        continue
+    else:
+        left -= user
+        print(f"Left:{left}")
+
+
