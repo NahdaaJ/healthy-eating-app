@@ -51,10 +51,11 @@ class WebManager:
             healthURL = f"&health={health}"
         if meal_type != "":
             typeURL = f"&mealType={meal_type}"
-        calorieURL = f"&calories=200-{calorie}"
+
+        min_calorie = calorie-100
+        calorieURL = f"&calories={min_calorie}-{calorie}"
 
         URL = f"https://api.edamam.com/api/recipes/v2?type=public{q}&app_id={R_APP_ID}&app_key={R_ED_API_KEY}{dietURL}{healthURL}{typeURL}{calorieURL}"
-        print(URL)
         response = requests.get(URL)
         recipe_data = response.json()
 
@@ -63,6 +64,12 @@ class WebManager:
         for index, item in enumerate(recipe_list):
             url = item['recipe']['url']
             if not WebManager.validURL(url):
+                recipe_list.pop(index)
+
+            if "recipes" in item['recipe']['label']:
+                recipe_list.pop(index)
+
+            if "Recipes" in item['recipe']['label']:
                 recipe_list.pop(index)
 
         return recipe_list

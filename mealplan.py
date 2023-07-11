@@ -54,11 +54,6 @@ def mealPlan():
     dinner_calories = round(int(calorie_limit)*0.3)
     snack_calories = round(int(calorie_limit)*0.15)
 
-    print(f"Breakfast Calories: {breakfast_calories}")
-    print(f"Lunch Calories: {lunch_calories}")
-    print(f"Dinner Calories: {dinner_calories}")
-    print(f"Snack Calories: {snack_calories}")
-
 
     diet = input("""\nFor your whole meal plan, please enter ONE diet or press enter to skip.
     Balanced                    Low-Carb
@@ -82,27 +77,99 @@ def mealPlan():
 
     Your input: """).strip()
 
+    print(f"\n\nYou have chosen a daily calorie limit of {calorie_limit}, with requirements '{diet}' and '{health}'.\nYour calories have been split as the following:")
+    print(f"Breakfast Calories: {breakfast_calories}")
+    print(f"Lunch Calories: {lunch_calories}")
+    print(f"Dinner Calories: {dinner_calories}")
+    print(f"Snack Calories: {snack_calories}")
+
     breakfast = mealPlanner("breakfast", breakfast_calories, diet, health)
     lunch = mealPlanner("lunch", lunch_calories, diet, health)
     dinner = mealPlanner("dinner", dinner_calories, diet, health)
     snack = mealPlanner("snack", snack_calories, diet, health)
 
-    print("Breakfast:")
+    ingredientsCalculator(breakfast, lunch, dinner, snack,2)
+
+def ingredientsCalculator(breakfast, lunch, dinner, snack, serving_size):
+    meal_ingredients = {}
+
     for item in breakfast:
-        print(item)
+        serving = item['recipe']['yield']
+        ingredients_multiplier = serving_size/serving
 
-    print("\nLunch:")
+        for items in item['recipe']['ingredients']:
+            quantity = str(round(items['quantity']*ingredients_multiplier, 2))
+            if items['food'].lower() in meal_ingredients:
+                if items['measure'] != "<unit>" and items['measure'] != None:
+                    meal_ingredients[f"{items['food'].lower()}"] += ", " + quantity + " " + items['measure']
+                else:
+                    meal_ingredients[f"{items['food'].lower()}"] += ", " + quantity
+            else:
+                if items['measure'] != "<unit>" and items['measure'] != None:
+                    meal_ingredients[f"{items['food'].lower()}"] = quantity + " " + items['measure']
+                else:
+                    meal_ingredients[f"{items['food'].lower()}"] = quantity
+
     for item in lunch:
-        print(item)
+        serving = item['recipe']['yield']
+        ingredients_multiplier = serving_size/serving
 
-    print("\nDinner:")
+        for items in item['recipe']['ingredients']:
+            quantity = str(round(items['quantity']*ingredients_multiplier, 2))
+            if items['food'].lower() in meal_ingredients:
+                if items['measure'] != "<unit>" and items['measure'] != None:
+                    meal_ingredients[f"{items['food'].lower()}"] += ", " + quantity + " " + items['measure']
+                else:
+                    meal_ingredients[f"{items['food'].lower()}"] += ", " + quantity
+            else:
+                if items['measure'] != "<unit>" and items['measure'] != None:
+                    meal_ingredients[f"{items['food'].lower()}"] = quantity + " " + items['measure']
+                else:
+                    meal_ingredients[f"{items['food'].lower()}"] = quantity
+
     for item in dinner:
-        print(item)
+        serving = item['recipe']['yield']
+        ingredients_multiplier = serving_size/serving
 
-    print("\nSnacks:")
+        for items in item['recipe']['ingredients']:
+            quantity = str(round(items['quantity']*ingredients_multiplier, 2))
+            if items['food'].lower() in meal_ingredients:
+                if items['measure'] != "<unit>" and items['measure'] != None:
+                    meal_ingredients[f"{items['food'].lower()}"] += ", " + quantity + " " + items['measure']
+                else:
+                    meal_ingredients[f"{items['food'].lower()}"] += ", " + quantity
+            else:
+                if items['measure'] != "<unit>" and items['measure'] != None:
+                    meal_ingredients[f"{items['food'].lower()}"] = quantity + " " + items['measure']
+                else:
+                    meal_ingredients[f"{items['food'].lower()}"] = quantity
+
     for item in snack:
-        print(item)
+        serving = item['recipe']['yield']
+        ingredients_multiplier = serving_size/serving
 
+        for items in item['recipe']['ingredients']:
+            quantity = str(round(items['quantity']*ingredients_multiplier, 2))
+            if items['food'].lower() in meal_ingredients:
+                if items['measure'] != "<unit>" and items['measure'] != None:
+                    meal_ingredients[f"{items['food'].lower()}"] += ", " + quantity + " " + items['measure']
+                else:
+                    meal_ingredients[f"{items['food'].lower()}"] += ", " + quantity
+            else:
+                if items['measure'] != "<unit>" and items['measure'] != None:
+                    meal_ingredients[f"{items['food'].lower()}"] = quantity + " " + items['measure']
+                else:
+                    meal_ingredients[f"{items['food'].lower()}"] = quantity
+
+    print("\nIngredient List:")
+    meal_ingredients = sorted(meal_ingredients.items())
+
+    for key, value in meal_ingredients:
+        print(f"{key.title()} - {value}")
+
+    print("""Metric Conversions:
+1 Ounce,oz =  28 Grams,g
+1 Pound,lb = 0.45 Kilograms,kg""")
 
 def mealPlanner(meal_type, calories, diet, health):
     valid_input = True
@@ -110,9 +177,10 @@ def mealPlanner(meal_type, calories, diet, health):
     meal = {}
     meals_week = []
 
+    print(f"\n------------------------------------{meal_type.upper()}------------------------------------\n")
     while days_left > 0:
         main_ingredient = input(
-            f"\n\nFor {meal_type} please list your main ingredients, separating with commas, or press enter to skip: ")
+            f"For {meal_type} please list your main ingredients, separating with commas, or press enter to skip: ")
         number_of_meals = input("How many days would you like this to be the main ingredient? ")
 
         if not number_of_meals.isdigit():
@@ -120,18 +188,18 @@ def mealPlanner(meal_type, calories, diet, health):
             continue
 
         if days_left-int(number_of_meals) < 0:
-            print(f"You have {days_left} days left. Input too large.")
+            print(f"You have {days_left} days left. Input too large.\n")
             continue
         else:
             meal[f'{main_ingredient}'] = int(number_of_meals)
             days_left -= int(number_of_meals)
             if days_left != 0:
-                print(f"{days_left} days left.")
+                print(f"{days_left} days left.\n")
 
     for key, value in meal.items():
         meal_list = web_manager.searchCalories(key, diet, health, meal_type, calories)
 
-        print(f"Following {meal_type} choices: ")
+        print(f"\nFollowing {meal_type} choices: ")
         for index, item in enumerate(meal_list):
             print(f"{index + 1} - {item['recipe']['label']}")
 
