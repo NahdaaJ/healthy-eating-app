@@ -40,24 +40,24 @@ def generateMealPlan(number_of_meals, main_ingredients, diet, health, meal_type,
 
 def mealPlan():
     valid_input = False
-    number_of_meals = 7
-    breakfast_list = []
-    lunch_list = []
-    dinner_list = []
-    length = 0
 
     while not valid_input:
-        calorie_limit = input("Please input your daily calorie limit.")
+        calorie_limit = input("Please input your daily calorie limit: ")
 
         if not calorie_limit.isdigit():
             input("\nPlease enter a numerical value. Press enter to try again.\n")
         else:
             break
 
-    breakfast_calories = round(calorie_limit*0.25)
-    lunch_calories = round(calorie_limit*0.3)
-    dinner_calories = round(calorie_limit*0.3)
-    snack_calories = round(calorie_limit*0.15)
+    breakfast_calories = round(int(calorie_limit)*0.25)
+    lunch_calories = round(int(calorie_limit)*0.3)
+    dinner_calories = round(int(calorie_limit)*0.3)
+    snack_calories = round(int(calorie_limit)*0.15)
+
+    print(f"Breakfast Calories: {breakfast_calories}")
+    print(f"Lunch Calories: {lunch_calories}")
+    print(f"Dinner Calories: {dinner_calories}")
+    print(f"Snack Calories: {snack_calories}")
 
 
     diet = input("""\nFor your whole meal plan, please enter ONE diet or press enter to skip.
@@ -82,20 +82,30 @@ def mealPlan():
 
     Your input: """).strip()
 
-    mealSetter(breakfast_calories)
+    breakfast = mealPlanner("breakfast", breakfast_calories, diet, health)
+    lunch = mealPlanner("lunch", lunch_calories, diet, health)
+    dinner = mealPlanner("dinner", dinner_calories, diet, health)
+    snack = mealPlanner("snack", snack_calories, diet, health)
+
+    print("Breakfast:")
+    for item in breakfast:
+        print(item)
+
+    print("\nLunch:")
+    for item in lunch:
+        print(item)
+
+    print("\nDinner:")
+    for item in dinner:
+        print(item)
+
+    print("\nSnacks:")
+    for item in snack:
+        print(item)
 
 
-    # lunch_main_ingredient = input(
-    #     "\n\nFor dinner please list your main ingredients, separating with commas, or press enter to skip: ")
-    # dinner_main_ingredient = input(
-    #     "\n\nFor breakfast please list your main ingredients, separating with commas, or press enter to skip: ")
-    # snacks_main_ingredient = input(
-    #     "\n\nFor snacks please list your main ingredients, separating with commas, or press enter to skip: ")
-
-
-
-def mealSetter(meal_type, calories, diet, health):
-    valid_input = False
+def mealPlanner(meal_type, calories, diet, health):
+    valid_input = True
     days_left = 7
     meal = {}
     meals_week = []
@@ -115,7 +125,8 @@ def mealSetter(meal_type, calories, diet, health):
         else:
             meal[f'{main_ingredient}'] = int(number_of_meals)
             days_left -= int(number_of_meals)
-            print(f"{days_left} days left.")
+            if days_left != 0:
+                print(f"{days_left} days left.")
 
     for key, value in meal.items():
         meal_list = web_manager.searchCalories(key, diet, health, meal_type, calories)
@@ -124,23 +135,32 @@ def mealSetter(meal_type, calories, diet, health):
         for index, item in enumerate(meal_list):
             print(f"{index + 1} - {item['recipe']['label']}")
 
-        while not valid_input:
+        while valid_input:
+            valid_input1 = True
             user_choice = input(
                 f"\nPlease choose {value} {meal_type} meals, separating them by a comma. You can choose in any order: ").strip().replace(" ", "")
 
-            user_meal = user_choice.split(",")
+            meal_list_index = user_choice.split(",")
 
-            if len(user_meal) != value:
-                input(f"\nPlease enter {number_of_meals} meals. Press enter and try again.\n")
-            else:
+            if len(meal_list_index) != value:
+                input(f"\nPlease enter {value} meals. Press enter and try again.\n")
+                continue
+
+            for index in meal_list_index:
+                if int(index) > len(meal_list) or int(index)-1 < 0:
+                    input(f"You've input a number outside of the scope. Press enter to try again.")
+                    valid_input1 = False
+                    break
+
+            if valid_input1:
+                for item in meal_list_index:
+                    meals_week.append(meal_list[int(item) - 1])
                 break
-
-        for item in user_meal:
-            meals_week.append(meal_list[int(item) - 1])
 
         print("\nYou have chosen:")
         for item in meals_week:
             print(item['recipe']['label'])
 
+    return meals_week
 
-mealSetter("dinner", 300, "", "keto-friendly")
+mealPlan()

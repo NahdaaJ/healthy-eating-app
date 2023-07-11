@@ -118,17 +118,7 @@ INGREDIENTS:""")
         new_recipe = Recipes(recipe_name, url, ingredients, diet, health, calories_per_serving, servings)
         recipe_manager.add_recipe(new_recipe)
 
-number = 10
-left = 10
 
-while left > 0:
-    user = int(input("Enter number of days"))
 
-    if left-user < 0:
-        print(f"You have {left} days left. Input too large.")
-        continue
-    else:
-        left -= user
-        print(f"Left:{left}")
 
 
